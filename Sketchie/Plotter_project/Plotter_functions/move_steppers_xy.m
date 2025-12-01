@@ -4,7 +4,7 @@ function move_steppers_xy(x_move, y_move, x_stepper, y_stepper)
 
         % checking if it should move
         if x_move(i) == 0 && y_move(i) == 0
-            continue
+            continue;
 
         % when moving in both directions
         elseif x_move(i) ~= 0 && y_move(i) ~= 0
@@ -16,7 +16,7 @@ function move_steppers_xy(x_move, y_move, x_stepper, y_stepper)
             if longer_distance == abs(x_move(i))
                 move_steppers_diagonal(x_move, y_move, x_stepper, y_stepper, i, swi, increments);
             else
-                move_steppers_diagonal(y_move, x_move, y_stepper, x_stepper, i, swi, increments)
+                move_steppers_diagonal(y_move, x_move, y_stepper, x_stepper, i, swi, increments);
             end
         
         % moving only in one direction

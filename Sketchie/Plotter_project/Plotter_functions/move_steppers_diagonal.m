@@ -1,4 +1,4 @@
-function move_steppers_diagonal(major_move, minor_move, major_stepper, minor_stepper, i, swi, increments)
+    function move_steppers_diagonal(major_move, minor_move, major_stepper, minor_stepper, i, swi, increments)
     % round in ms, then convert to s
     TIME_CONSTANT = round((6.38/2048)*1000);
     TIME_CONSTANT = TIME_CONSTANT/1000;
@@ -15,17 +15,30 @@ function move_steppers_diagonal(major_move, minor_move, major_stepper, minor_ste
     moves_passed = 0; % how many moves already passed stepwise
     moves_skipped = 0; % how many moves have been skipped by joining
     is_slow = false; % if the code should join together moves
+    last_move = false; % allowing the last move and then breaking cycle
     
-    for j = 1:length(increments)
+    j = 0;
+    while j <= length(increments)
+        % excluding the last step
+        if j < length(increments)
+            j = j + 1;
+        elseif last_move
+            break;
+        else
+            last_move = true;
+        end
+
+        % dont do anything if it skipped moves
+        if moves_skipped > 0
+            % the continue skips one move as well
+            j = j + moves_skipped - 1;
+            moves_skipped = 0;
+            continue;
+        end
+        
         running = true;
         % until the stepper starts moving because of the timer
-        while running
-            % dont do anything if it skipped moves
-            if moves_skipped > 0
-                moves_skipped = moves_skipped - 1;
-                continue;
-            end
-            
+        while running  
             if swi && toc >= moves_passed*TIME_CONSTANT
                 if length(increments) >= j+2
                     next_moves_passed = moves_passed + increments(j) + increments(j+1);
@@ -37,20 +50,19 @@ function move_steppers_diagonal(major_move, minor_move, major_stepper, minor_ste
                 % checking if there are any increments left and if its too
                 % slow
                 if is_slow && toc >= next_moves_passed*TIME_CONSTANT
-                    steps = increments(j) + increments(j+2);
+                    time_passed = toc;
+                    [moves_skipped, moves_passed, steps] = join_moves(increments, j, moves_passed, TIME_CONSTANT, time_passed);
 
                     if minor_move(i) > 0
                         minor_stepper.step(steps, 'Direction', 'Forward');
                     else
-                        minor_stepper.step(steps, 'Direction', 'Backward')
+                        minor_stepper.step(steps, 'Direction', 'Backward');
                     end
-                    moves_passed = moves_passed + increments(j) + increments(j+1) + increments(j+2);
-                    moves_skipped = 2;
                 else
                     if minor_move(i) > 0
                         minor_stepper.step(increments(j), 'Direction', 'Forward');
                     else
-                        minor_stepper.step(increments(j), 'Direction', 'Backward')
+                        minor_stepper.step(increments(j), 'Direction', 'Backward');
                     end
                     moves_passed = moves_passed + increments(j);
                 end

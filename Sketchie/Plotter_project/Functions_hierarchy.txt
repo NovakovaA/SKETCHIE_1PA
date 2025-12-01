@@ -5,3 +5,4 @@ Main_plotter.m
 	- move_steppers_xy.m
 		- xy_steps2line_increments.m
 		- move_steppers_diagonal.m
+            - join_moves.m
